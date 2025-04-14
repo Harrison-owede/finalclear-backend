@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const hashPassword = require("../utilities/hashutilities");
 const registerValidations = require("../validations/registerValidations");
+const generateToken = require("../utilities/generateToken");
 
 
 
@@ -36,8 +37,13 @@ if(error){
         dob,
       });
   
-      await newUser.save();
-      res.status(201).json({ message: "Registration Successful" });
+       const savedUser = await newUser.save();
+       const token = generateToken(savedUser._id)
+      res.status(201).json({ message: "Registration Successful",
+        token,
+       });
+
+
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Server error" });
