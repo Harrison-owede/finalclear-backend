@@ -24,7 +24,7 @@ const loginUser = async (req, res)=>{
             return res.status(404).json({error : "Please register before log in"});
         }
 
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
 
         const isPasswordCorrect = await comparePassword(password, user.password);
         if(!isPasswordCorrect) {
