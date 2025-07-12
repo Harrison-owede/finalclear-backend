@@ -13,11 +13,11 @@ const {error} = registerValidations.validate(req.body);
 if(error){
  return res.status(400).json({error : error.details[0].message})
 }
-const { firstName, lastName, department, matricNumber, email, phoneNumber, password, confirmPassword, dob } = req.body;
+const { firstName, lastName,  matricNumber, email, phoneNumber, password, confirmPassword,  } = req.body;
 
     // console.log("Incoming request body:", req.body);
   
-    if (!firstName || !lastName || !department || !matricNumber || !email || !phoneNumber || !password || !confirmPassword || !dob) {
+    if (!firstName || !lastName || !matricNumber || !email || !phoneNumber || !password || !confirmPassword ) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
@@ -34,12 +34,11 @@ const { firstName, lastName, department, matricNumber, email, phoneNumber, passw
       const newUser = new User({
         firstName,
         lastName,
-        department,
         matricNumber,
         email,
         phoneNumber,
         password: hashedPassword,
-        dob,
+      
       });
   
        const savedUser = await newUser.save();

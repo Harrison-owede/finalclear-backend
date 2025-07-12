@@ -27,7 +27,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
   app.get("/api", (req, res) => {
-    res.send("✅ Vortech API is running successfully");
+    res.send("✅ Final Clear API is running successfully");
   });
 
 // START SERVER

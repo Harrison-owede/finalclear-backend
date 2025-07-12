@@ -13,9 +13,7 @@ const registerValidations = Joi.object({
     "any.required": "Last name is required",
   }),
 
-  department: Joi.string().required().messages({
-    "any.required": "Department is required",
-  }),
+
 
   matricNumber: Joi.string().required().messages({
     "any.required": "Matric number is required",
@@ -49,9 +47,7 @@ const registerValidations = Joi.object({
     "any.required": "{{#label}} is required.",
   }),
 
-  dob: Joi.string().required().messages({
-    "any.required": "Date of Birth is required",
-  }),
+
 
 });
 
