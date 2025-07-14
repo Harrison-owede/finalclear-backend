@@ -40,7 +40,8 @@ const loginUser = async (req, res)=>{
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
-                matricNumber: user.matricNumber
+                matricNumber: user.matricNumber,
+                department : user.department
             }
           });
 

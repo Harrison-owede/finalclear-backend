@@ -31,6 +31,12 @@ const registerValidations = Joi.object({
     "any.required": "Phone Number is required",
   }),
 
+  department: Joi.string().min(3).required().messages({
+    "string.base": "Department should be a string.",
+    "string.min": "Department should have at least 3 characters",
+    "any.required": "Department is required",
+  }),
+
   password: Joi.string().min(6).max(12).required().messages({
     "string.base": "Password should be a string.",
     "string.min": "Password should have at least 6 characters",
