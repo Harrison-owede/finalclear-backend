@@ -43,9 +43,16 @@ const { firstName, lastName,  matricNumber, email, phoneNumber, password, confir
   
        const savedUser = await newUser.save();
        const token = generateToken(savedUser._id)
-      res.status(201).json({ message: "Registration Successful",
+       res.status(201).json({
+        message: "Registration Successful",
         token,
-       });
+        user: {
+          firstName: savedUser.firstName,
+          lastName: savedUser.lastName,
+          email: savedUser.email,
+          matricNumber: savedUser.matricNumber
+        }
+      });
 
 
     } catch (error) {
