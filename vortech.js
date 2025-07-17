@@ -18,6 +18,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const authRoutes = require("./routes/auth");  // ✅ make sure the path is correct
 app.use("/api", authRoutes);  // ✅ this adds /api/register endpoint
 
+const credentialRoutes = require('./routes/credentials');
+app.use('/api/credentials', credentialRoutes);
+
+
 // DB CONNECTION
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {

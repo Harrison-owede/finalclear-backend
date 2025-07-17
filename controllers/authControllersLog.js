@@ -1,57 +1,72 @@
 const User = require("../models/user");
-const comparePassword = require("../utilities/compareutilities");
-const generateToken = require("../utilities/generateToken");
-const loginValidations = require("../validations/loginValidations");
+const jwt = require('jsonwebtoken');
 
 
-const loginUser = async (req, res)=>{
 
-   const {error} = loginValidations.validate(req.body);
-   if(error){
-    return res.status(400).json({error : error.details[0].message})
-   }
-
-    const { email,  password } = req.body;
-    // console.log("Incoming request body:", req.body);
-
-    if(! email || !password){
-        return res.status(404).json({error: "All fields required"});
-    }
-
-    try {
-        const user = await User.findOne({email});
-        if(!user){
-            return res.status(404).json({error : "Please register before log in"});
-        }
-
-        const bcrypt = require('bcryptjs');
-
-        const isPasswordCorrect = await comparePassword(password, user.password);
-        if(!isPasswordCorrect) {
-            return res.status(404).json({error: "Invalid password or email"})
-        }
-
-        const token = generateToken(user._id);
-
-        res.status(201).json({
-            message: "Login Successful",
-            token,
-            user: {
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                matricNumber: user.matricNumber,
-                department : user.department
-            }
-          });
-
-    } catch (error) {
-      res.status(404).json({error: "Error Logging in", error})  
-    }
-
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '1h',
+  });
 };
 
-module.exports = {loginUser}
+
+const loginUser = async (req, res) => {
+
+    const { email, password } = req.body;
+  
+    // Validate
+    if (!email || !password) {
+      return res.status(400).json({ error: 'All fields required' });
+    }
+  
+    try {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ error: 'No user found' });
+  
+      const bcrypt = require('bcryptjs');
+      const valid = await bcrypt.compare(password, user.password);
+
+      // const hash = await bcrypt.hash('admin123', 10);
+      //  console.log(hash);
+      if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
 
- 
+
+  
+      const token = generateToken(user._id); // make sure this is correct
+  
+      // Check if it's an admin
+      if (user.status === 'admin') {
+        return res.status(200).json({
+          message: 'Admin login successful',
+          token,
+          role: 'admin',
+          user: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          }
+        });
+      }
+  
+      // Otherwise normal student
+      res.status(200).json({
+        message: 'Student login successful',
+        token,
+        role: 'student',
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          matricNumber: user.matricNumber,
+          department: user.department
+        }
+      });
+  
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+  
+  module.exports = { loginUser };
