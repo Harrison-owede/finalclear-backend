@@ -13,6 +13,8 @@ app.use(cors());
 app.use(express.json()); // required to parse JSON from requests
 app.use(bodyParser.json()); // Parse application/json
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use('/uploads', express.static('uploads'));
+
 
 // ROUTES
 const authRoutes = require("./routes/auth");  // ✅ make sure the path is correct

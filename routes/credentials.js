@@ -13,7 +13,9 @@ const {
   updateCredentialStatus,
   getMyCredential,
   getDashboardStats,
-  editCredential
+  editCredential,
+  getUploadedStudents,
+  getStudentsWithoutUpload
 } = require('../controllers/credentialController');
 
 const authenticateUser = require('../middleware/authenticate'); // your JWT middleware
@@ -35,6 +37,10 @@ router.get('/admin/credentials', authenticateUser, checkAdmin, getAllCredentials
 router.patch('/admin/credentials/:id', authenticateUser, checkAdmin, updateCredentialStatus); // Admin updates
 router.get('/dashboard/stats', authenticateUser, checkAdmin, getDashboardStats );
 router.get('/my-credential', authenticateUser, getMyCredential);
+router.get('/credentials/uploaded', authenticateUser, checkAdmin, getUploadedStudents);
+router.get('/credentials/not-uploaded', authenticateUser, checkAdmin, getStudentsWithoutUpload);
+
+
 
 router.put(
   '/edit',

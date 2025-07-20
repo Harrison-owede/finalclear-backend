@@ -6,25 +6,27 @@ const User = require('../models/user');
 exports.uploadCredential = async (req, res) => {
   try {
     const { name, department, matricNumber } = req.body;
-    const files = req.files; // 🔥 grab all files
+    const files = req.files;
+
+    // 🔐 Check if this user has already uploaded
+    const existing = await Credential.findOne({ user: req.user.id });
+    if (existing) {
+      return res.status(400).json({ error: 'Credential already uploaded' });
+    }
 
     const credential = new Credential({
       user: req.user.id,
       name,
       department,
       matricNumber,
-      status: 'Pending', // ✅ now with the comma
-
-      // Uploaded file paths
+      status: 'Pending',
       jambUtmeResult: files.jambUtmeResult?.[0]?.path,
       oLevelResult: files.oLevelResult?.[0]?.path,
       jambAdmissionLetter: files.jambAdmissionLetter?.[0]?.path,
-   
     });
 
     await credential.save();
 
-    // ✅ Send email to user
     const user = await User.findById(req.user.id);
 
     await sendEmail(
@@ -42,11 +44,12 @@ exports.uploadCredential = async (req, res) => {
 };
 
 
+
 // 2. Get All Credentials (for Admin)
 exports.getAllCredentials = async (req, res) => {
   try {
     const credentials = await Credential.find()
-      .populate('user', 'firstName lastName email')
+      .populate('user', 'firstName lastName email matricNumber')
       .sort({ uploadedAt: -1 }); // optional: latest first
 
     res.json(credentials);
@@ -155,4 +158,35 @@ exports.editCredential = async (req, res) => {
     res.status(500).json({ error: 'Server error during update' });
   }
 };
+
+//check students who have uploaded
+
+exports.getUploadedStudents = async (req, res) => {
+  try {
+    const uploaded = await Credential.find().populate('user', 'firstName lastName email matricNumber');
+    res.json(uploaded);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch uploaded credentials' });
+  }
+};
+
+//Students Not uploaded
+
+// GET /api/credentials/not-uploaded
+exports.getStudentsWithoutUpload = async (req, res) => {
+  try {
+    const uploadedIds = await Credential.distinct('user');
+    const notUploaded = await User.find({
+      role: 'student',
+      _id: { $nin: uploadedIds }
+    }).select('firstName lastName email matricNumber');
+
+    res.json(notUploaded);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch students without uploads' });
+  }
+};
+
 
