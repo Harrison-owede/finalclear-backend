@@ -4,13 +4,13 @@ const sendEmail = async (to, subject, html) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'your_email@gmail.com',
-      pass: 'your_app_password'
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
     }
   });
 
   await transporter.sendMail({
-    from: '"Vortech Admin" <your_email@gmail.com>',
+    from: `"Vortech Admin" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html
@@ -18,3 +18,4 @@ const sendEmail = async (to, subject, html) => {
 };
 
 module.exports = sendEmail;
+

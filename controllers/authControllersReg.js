@@ -38,6 +38,7 @@ const { firstName, lastName,  matricNumber, email, phoneNumber, password, confir
         email,
         phoneNumber,
         department,
+        role: "student",
         password: hashedPassword,
       
       });

@@ -16,24 +16,10 @@ exports.uploadCredential = async (req, res) => {
       status: 'Pending', // ✅ now with the comma
 
       // Uploaded file paths
-      bioDataForm: files.bioDataForm?.[0]?.path,
       jambUtmeResult: files.jambUtmeResult?.[0]?.path,
       oLevelResult: files.oLevelResult?.[0]?.path,
-      refLetterPastor: files.refLetterPastor?.[0]?.path,
-      refLetterSchool: files.refLetterSchool?.[0]?.path,
       jambAdmissionLetter: files.jambAdmissionLetter?.[0]?.path,
-      auiAdmissionNotification: files.auiAdmissionNotification?.[0]?.path,
-      birthCertificate: files.birthCertificate?.[0]?.path,
-
-      courseReg100: files.courseReg100?.[0]?.path,
-      courseReg200: files.courseReg200?.[0]?.path,
-      courseReg300: files.courseReg300?.[0]?.path,
-      courseReg400: files.courseReg400?.[0]?.path,
-      courseReg500: files.courseReg500?.[0]?.path,
-
-      matricOathForm: files.matricOathForm?.[0]?.path,
-      ictBioData: files.ictBioData?.[0]?.path,
-      bursaryClearance: files.bursaryClearance?.[0]?.path
+   
     });
 
     await credential.save();
@@ -109,6 +95,64 @@ exports.getMyCredential = async (req, res) => {
     res.json(credential);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch credential' });
+  }
+};
+
+// controllers/adminControllerCheckingStudents.js
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const totalStudents = await User.countDocuments({ role: 'student' });
+    const approved = await Credential.countDocuments({ status: 'Approved' });
+    const denied = await Credential.countDocuments({ status: 'Denied' });
+    const pending = await Credential.countDocuments({ status: 'Pending' });
+
+    res.json({
+      totalStudents,
+      approved,
+      denied,
+      pending
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+};
+
+// controllers/credentialController.js
+exports.editCredential = async (req, res) => {
+  try {
+    const studentId = req.user._id;
+
+    const credential = await Credential.findOne({ student: studentId });
+
+    if (!credential) {
+      return res.status(404).json({ error: 'No credential found for this student' });
+    }
+
+    // Update fields if they exist in req.body
+    credential.fullName = req.body.fullName || credential.fullName;
+    credential.matricNumber = req.body.matricNumber || credential.matricNumber;
+    credential.department = req.body.department || credential.department;
+
+    // Update file uploads if new ones are provided
+    if (req.files['jambUtmeResult']) {
+      credential.jambUtmeResult = req.files['jambUtmeResult'][0].path;
+    }
+
+    if (req.files['oLevelResult']) {
+      credential.oLevelResult = req.files['oLevelResult'][0].path;
+    }
+
+    if (req.files['jambAdmissionLetter']) {
+      credential.jambAdmissionLetter = req.files['jambAdmissionLetter'][0].path;
+    }
+
+    await credential.save();
+    res.json({ message: 'Credential updated successfully', credential });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error during update' });
   }
 };
 
