@@ -139,15 +139,13 @@ exports.editCredential = async (req, res) => {
 
     // Update file uploads if new ones are provided
     if (req.files['jambUtmeResult']) {
-      credential.jambUtmeResult = req.files['jambUtmeResult'][0].path;
+      credential.jambUtmeResult = `/uploads/${req.files['jambUtmeResult'][0].filename}`;
     }
-
     if (req.files['oLevelResult']) {
-      credential.oLevelResult = req.files['oLevelResult'][0].path;
+      credential.oLevelResult = `/uploads/${req.files['oLevelResult'][0].filename}`;
     }
-
     if (req.files['jambAdmissionLetter']) {
-      credential.jambAdmissionLetter = req.files['jambAdmissionLetter'][0].path;
+      credential.jambAdmissionLetter = `/uploads/${req.files['jambAdmissionLetter'][0].filename}`;
     }
 
     await credential.save();

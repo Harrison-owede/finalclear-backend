@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv")
 const bodyParser = require("body-parser");
+const path = require('path');
 
 
 dotenv.config();
@@ -13,7 +14,7 @@ app.use(cors());
 app.use(express.json()); // required to parse JSON from requests
 app.use(bodyParser.json()); // Parse application/json
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 // ROUTES
