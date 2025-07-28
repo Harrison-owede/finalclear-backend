@@ -45,7 +45,7 @@ exports.uploadCredential = async (req, res) => {
 
 
 
-// 2. Get All Credentials (for Admin)
+// 2. Get All Credentials (for Admin)   npm install -g npm@11.4.2
 exports.getAllCredentials = async (req, res) => {
   try {
     const credentials = await Credential.find()

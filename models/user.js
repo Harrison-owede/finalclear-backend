@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     phoneNumber : String,
     password : String,
     department : String,
-    status: { type: String, enum: ['student', 'admin'], default: 'student' },
+    role: { type: String, enum: ['student', 'admin'], default: 'student' },
     
     resetPasswordToken : String,
     resetPasswordTokenExpires : Date,
