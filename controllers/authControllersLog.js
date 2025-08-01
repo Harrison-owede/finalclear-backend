@@ -36,7 +36,7 @@ const loginUser = async (req, res) => {
       const token = generateToken(user._id); // make sure this is correct
   
       // Check if it's an admin
-      if (user.status === 'admin') {
+      if (user.role === 'admin') {
         return res.status(200).json({
           message: 'Admin login successful',
           token,
