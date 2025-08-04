@@ -53,7 +53,8 @@ const { firstName, lastName,  matricNumber, email, phoneNumber, password, confir
           lastName: savedUser.lastName,
           email: savedUser.email,
           matricNumber: savedUser.matricNumber,
-          department : savedUser.department
+          department : savedUser.department,
+          role : savedUser.role
         }
       });
 
