@@ -8,40 +8,43 @@ exports.uploadCredential = async (req, res) => {
     const { name, department, matricNumber } = req.body;
     const files = req.files;
 
-    // 🔐 Check if this user has already uploaded
+    // 🔐 Check for existing credentials from this user
     const existing = await Credential.findOne({ user: req.user.id });
     if (existing) {
       return res.status(400).json({ error: 'Credential already uploaded' });
     }
 
-    const credential = new Credential({
+    const newCredential = new Credential({
       user: req.user.id,
       name,
       department,
       matricNumber,
       status: 'Pending',
-      jambUtmeResult: files.jambUtmeResult?.[0]?.path,
-      oLevelResult: files.oLevelResult?.[0]?.path,
-      jambAdmissionLetter: files.jambAdmissionLetter?.[0]?.path,
+      jambUtmeResult: files.jambUtmeResult?.[0]?.path || '',
+      oLevelResult: files.oLevelResult?.[0]?.path || '',
+      jambAdmissionLetter: files.jambAdmissionLetter?.[0]?.path || '',
     });
 
-    await credential.save();
+    await newCredential.save();
 
-    const user = await User.findById(req.user.id);
-
+    // Notify user via email
     await sendEmail(
-      user.email,
+      req.user.email,
       'Credential Uploaded',
-      `<p>Dear ${user.firstName},</p><p>Your credential has been uploaded successfully and is currently marked as: <b>Pending</b>.</p>`
+      `<p>Dear ${req.user.firstName},</p><p>Your credential has been uploaded successfully and is currently marked as: <b>Pending</b>.</p>`
     );
 
-    res.status(201).json({ message: 'Credential uploaded and email sent successfully' });
+    res.status(201).json({
+      message: 'Credential uploaded and email sent successfully',
+      credential: newCredential,
+    });
 
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Upload failed' });
   }
 };
+
 
 
 
@@ -124,9 +127,8 @@ exports.getDashboardStats = async (req, res) => {
 // controllers/credentialController.js
 exports.editCredential = async (req, res) => {
   try {
-    const studentId = req.user._id;
-
-    const credential = await Credential.findOne({ student: studentId });
+    const userId = req.user._id;
+    const credential = await Credential.findOne({ user: userId });
 
     if (!credential) {
       return res.status(404).json({ error: 'No credential found for this student' });
@@ -139,14 +141,15 @@ exports.editCredential = async (req, res) => {
 
     // Update file uploads if new ones are provided
     if (req.files['jambUtmeResult']) {
-      credential.jambUtmeResult = `/uploads/${req.files['jambUtmeResult'][0].filename}`;
+      credential.jambUtmeResult = req.files['jambUtmeResult'][0].path; // cloudinary URL
     }
     if (req.files['oLevelResult']) {
-      credential.oLevelResult = `/uploads/${req.files['oLevelResult'][0].filename}`;
+      credential.oLevelResult = req.files['oLevelResult'][0].path;
     }
     if (req.files['jambAdmissionLetter']) {
-      credential.jambAdmissionLetter = `/uploads/${req.files['jambAdmissionLetter'][0].filename}`;
+      credential.jambAdmissionLetter = req.files['jambAdmissionLetter'][0].path;
     }
+    
 
     await credential.save();
     res.json({ message: 'Credential updated successfully', credential });

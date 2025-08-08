@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../middleware/upload');
 const checkAdmin = require('../middleware/checkAdmin');
-const User = require('../models/user')
-
-
-
+const authenticateUser = require('../middleware/authenticate');
+const User = require('../models/user');
 
 const {
   uploadCredential,
@@ -15,45 +13,52 @@ const {
   getDashboardStats,
   editCredential,
   getUploadedStudents,
-  getStudentsWithoutUpload
+  getStudentsWithoutUpload,
 } = require('../controllers/credentialController');
 
-const authenticateUser = require('../middleware/authenticate'); // your JWT middleware
-
+// Student Upload Credential
 router.post(
-  '/upload',
+  '/credentials',
   authenticateUser,
   upload.fields([
-    
-    { name: 'jambUtmeResult' },
-    { name: 'oLevelResult' },
-    { name: 'jambAdmissionLetter' },
-    
+    { name: 'jambUtmeResult', maxCount: 1 },
+    { name: 'oLevelResult', maxCount: 1 },
+    { name: 'jambAdmissionLetter', maxCount: 1 },
   ]),
   uploadCredential
 );
-// Student uploads
-router.get('/admin/credentials', authenticateUser, checkAdmin, getAllCredentials); // Admin views all
-router.patch('/admin/credentials/:id', authenticateUser, checkAdmin, updateCredentialStatus); // Admin updates
-router.get('/dashboard/stats', authenticateUser, checkAdmin, getDashboardStats );
+
+// Student Get My Credential
 router.get('/my-credential', authenticateUser, getMyCredential);
-router.get('/credentials/uploaded', authenticateUser, checkAdmin, getUploadedStudents);
-router.get('/credentials/not-uploaded', authenticateUser, checkAdmin, getStudentsWithoutUpload);
 
-
-
+// Student Edit Credential
 router.put(
-  '/edit',
+  '/edit-credentials',
   authenticateUser,
   upload.fields([
-    { name: 'jambUtmeResult' },
-    { name: 'oLevelResult' },
-    { name: 'jambAdmissionLetter' }
+    { name: 'jambUtmeResult', maxCount: 1 },
+    { name: 'oLevelResult', maxCount: 1 },
+    { name: 'jambAdmissionLetter', maxCount: 1 },
   ]),
   editCredential
 );
 
+// Admin View All Credentials
+router.get('/admin/credentials', authenticateUser, checkAdmin, getAllCredentials);
 
+// Admin Update Status
+router.patch('/admin/credentials/:id', authenticateUser, checkAdmin, updateCredentialStatus);
+
+// Admin Stats Dashboard
+router.get('/dashboard/stats', authenticateUser, checkAdmin, getDashboardStats);
+
+// Admin See Uploaded Students
+router.get('/credentials/uploaded', authenticateUser, checkAdmin, getUploadedStudents);
+
+// Admin See Students Without Upload
+router.get('/credentials/not-uploaded', authenticateUser, checkAdmin, getStudentsWithoutUpload);
+
+// Admin Search Students by Name
 router.get('/students/search', authenticateUser, checkAdmin, async (req, res) => {
   const searchTerm = req.query.name || '';
   try {
@@ -61,15 +66,14 @@ router.get('/students/search', authenticateUser, checkAdmin, async (req, res) =>
       role: 'student',
       $or: [
         { firstName: new RegExp(searchTerm, 'i') },
-        { lastName: new RegExp(searchTerm, 'i') }
-      ]
+        { lastName: new RegExp(searchTerm, 'i') },
+      ],
     });
-
     res.json(users);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Search failed' });
   }
 });
-
 
 module.exports = router;

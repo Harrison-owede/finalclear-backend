@@ -3,26 +3,32 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv")
 const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 
 dotenv.config();
 const app = express();
 
+
 // MIDDLEWARE
 app.use(cors());
-app.use(express.json()); // required to parse JSON from requests
-app.use(bodyParser.json()); // Parse application/json
+app.use(express.json()); 
+app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(cookieParser());
 
 
 // ROUTES
-const authRoutes = require("./routes/auth");  // ✅ make sure the path is correct
-app.use("/api", authRoutes);  // ✅ this adds /api/register endpoint
+const authRoutes = require("./routes/auth");  
+app.use("/api", authRoutes); 
 
 const credentialRoutes = require('./routes/credentials');
-app.use('/api/credentials', credentialRoutes);
+app.use('/api/', credentialRoutes);
+
+const fileRoutes = require("./routes/files");
+app.use("/api/files", fileRoutes);
 
 
 // DB CONNECTION

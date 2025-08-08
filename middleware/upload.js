@@ -1,34 +1,39 @@
-const multer = require('multer');
-const path = require('path');
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../utilities/cloudinary");
 
-// Define storage strategy
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "vortech_uploads",
+    resource_type: "auto",
+    use_filename: true,
+    unique_filename: true,
+    allowed_formats: ["pdf", "jpg", "jpeg", "png", "docx"],
+    access_mode: "authenticated", // make it private (secure)
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
 });
 
-// Filter file types
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /pdf|jpg|jpeg|png/;
-  const ext = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mime = allowedTypes.test(file.mimetype);
+  const allowedMimeTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
 
-  if (ext && mime) {
+  if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only PDF, JPG, JPEG, or PNG files are allowed'));
+    cb(new Error("Invalid file type. Only PDF, JPG, PNG, DOCX allowed."), false);
   }
 };
 
-// Create multer upload instance
 const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // optional: limit size to 5MB
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
 });
 
 module.exports = upload;
